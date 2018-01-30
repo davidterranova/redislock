@@ -1,17 +1,18 @@
 // Created by davidterranova on 30/01/2018.
 
-package redis_lock
+package redislock
 
 import (
+	"context"
+	"os"
 	"testing"
 	"time"
-	log "github.com/sirupsen/logrus"
-	"os"
-	"context"
+
 	"github.com/go-redis/redis"
+	log "github.com/sirupsen/logrus"
 )
 
-const(
+const (
 	REDIS_URI = "localhost:6379"
 )
 
@@ -43,7 +44,7 @@ func TestLocker(t *testing.T) {
 	}
 
 	var unlocked = 0
-	var ctx, _ = context.WithTimeout(context.Background(), time.Duration(3) * time.Second)
+	var ctx, _ = context.WithTimeout(context.Background(), time.Duration(3)*time.Second)
 
 	var lu = func(l *Locker) {
 		err := l.Lock(ctx)
@@ -63,7 +64,7 @@ func TestLocker(t *testing.T) {
 	}
 
 	// wait for all unlock
-	for ; unlocked < len(lockers); {
+	for unlocked < len(lockers) {
 		time.Sleep(10 * time.Millisecond)
 	}
 }
