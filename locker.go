@@ -20,6 +20,7 @@ var (
 	ErrAlreadyLocked = errors.New("lock already taken")
 )
 
+// Locker struct
 type Locker struct {
 	redis *redis.Client
 	locked bool
@@ -28,6 +29,7 @@ type Locker struct {
 	lockTTL time.Duration
 }
 
+// NewLocker : create a lock on a key with a *redis.Client connection
 func NewLocker(client *redis.Client, key string) *Locker {
 	return &Locker{
 		redis : client,
@@ -37,6 +39,7 @@ func NewLocker(client *redis.Client, key string) *Locker {
 	}
 }
 
+// Lock : acquire lock, context aware
 func (l *Locker) Lock(ctx context.Context) error {
 	if l.locked {
 		return ErrAlreadyLocked
@@ -68,6 +71,7 @@ func (l *Locker) Lock(ctx context.Context) error {
 	return err
 }
 
+// Unlock : release lock
 func (l *Locker) Unlock() error {
 	var err error
 	if l.locked {
@@ -88,6 +92,7 @@ func (l *Locker) Unlock() error {
 	return err
 }
 
+// SetLockTTL : specify lock TTL
 func (l *Locker) SetLockTTL(d time.Duration) *Locker {
 	l.lockTTL = d
 	return l
