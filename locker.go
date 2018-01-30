@@ -13,6 +13,7 @@ import (
 
 const (
 	LOCK_SUFFIX = ".rdlock"
+	DEFAULT_LOCK_TTL = time.Duration(20)*time.Second
 )
 
 var (
@@ -24,6 +25,7 @@ type Locker struct {
 	locked bool
 	key string
 	lock string
+	lockTTL time.Duration
 }
 
 func NewLocker(client *redis.Client, key string) *Locker {
@@ -31,6 +33,7 @@ func NewLocker(client *redis.Client, key string) *Locker {
 		redis : client,
 		locked: false,
 		key: key,
+		lockTTL: DEFAULT_LOCK_TTL,
 	}
 }
 
@@ -50,7 +53,7 @@ func (l *Locker) Lock(ctx context.Context) error {
 		case <-ctx.Done():
 			return ctx.Err()
 		default:
-			ok, err = l.redis.SetNX(l.key+LOCK_SUFFIX, lock, time.Duration(20)*time.Second).Result()
+			ok, err = l.redis.SetNX(l.key+LOCK_SUFFIX, lock, l.lockTTL).Result()
 			if err != nil {
 				return err
 			}
@@ -83,4 +86,9 @@ func (l *Locker) Unlock() error {
 		l.locked = false
 	}
 	return err
+}
+
+func (l *Locker) SetLockTTL(d time.Duration) *Locker {
+	l.lockTTL = d
+	return l
 }
